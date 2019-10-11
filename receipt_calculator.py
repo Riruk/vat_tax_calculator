@@ -1,4 +1,4 @@
-import os, csv, re
+import os, csv, re, sys
 
 cur_folder = os.path.dirname(__file__)
 DATA_FOLDER = os.path.join(cur_folder, 'data')
@@ -6,7 +6,7 @@ INPUT_FOLDER = os.path.join(cur_folder, 'input')
 PRODUCT_CATALOGUE_FILE = os.path.join(DATA_FOLDER, 'product_catalogue.csv')
 VAT_RATES_FILE = os.path.join(DATA_FOLDER, 'vat_rates.csv')
 
-class receipt_calculator:
+class ReceiptCalculator:
     def __init__(self, product_catalogue_file=PRODUCT_CATALOGUE_FILE, vat_rates_file=VAT_RATES_FILE):
         self.product_catalogue = dict()
         self.vat_rates = dict()
@@ -61,6 +61,12 @@ class receipt_calculator:
                 vat_rates_file))
             print(str(e))
 
+    def get_product_catalogue(self):
+        return self.product_catalogue
+
+    def get_vat_rates(self):
+        return self.vat_rates
+
     def get_price(self, product):
         try:
             return self.product_catalogue[product.lower()]
@@ -84,6 +90,23 @@ class receipt_calculator:
         if price is None or vat is None:
             return
         return price + price * vat / 100
+
+    def set_price(self, product, price):
+        if not isinstance(price, float) and not isinstance(price, int):
+            print('I do not update the catalogue with "Product: {}, Price: {}", since price should be of type float'
+                  'or int.'.format(product, price))
+            return
+        self.product_catalogue[product.lower()] = price
+
+    def set_vat(self, product, vat):
+        if not isinstance(vat, float) and not isinstance(vat, int):
+            print('I do not update the vat rates database with "Product: {}, VAT: {}", since VAT should be of type int'
+                  'or float.'.format(product, vat))
+            return
+        product = product.lower()
+        if 'of' in product:
+            product = product.split('of')[-1].strip()
+        self.vat_rates[product] = vat
 
     def process_input_file(self, input_file):
         total = 0
@@ -120,6 +143,10 @@ class receipt_calculator:
 
 
 if __name__ == '__main__':
-    input_file = os.path.join(INPUT_FOLDER, 'input_1.csv')
-    calculator = receipt_calculator()
+    args = sys.argv
+    if len(args) < 2:
+        input_file = os.path.join(INPUT_FOLDER, 'input_1.csv')
+    else:
+        input_file = args[1]
+    calculator = ReceiptCalculator()
     calculator.process_input_file(input_file)
