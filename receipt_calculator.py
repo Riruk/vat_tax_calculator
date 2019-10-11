@@ -8,12 +8,13 @@ VAT_RATES_FILE = os.path.join(DATA_FOLDER, 'vat_rates.csv')
 
 class ReceiptCalculator:
     def __init__(self, product_catalogue_file=PRODUCT_CATALOGUE_FILE, vat_rates_file=VAT_RATES_FILE):
-        self.product_catalogue = dict()
-        self.vat_rates = dict()
+        self.product_catalogue = dict() #The product catalogue is in the form of {"box of apples": 1.89}
+        self.vat_rates = dict() #The vat rates is in the form of {"apples": 4}, where "apple" is the product name part after 'of'
         self.load_catalogue(product_catalogue_file)
         self.load_vats(vat_rates_file)
 
     def load_catalogue(self, product_catalogue_file):
+        # This method loads product_catalogue data from product_catalogue_file
         if not os.path.exists(product_catalogue_file):
             print('I cannot find product catalogue file in {}'.format(product_catalogue_file))
             return
@@ -37,6 +38,7 @@ class ReceiptCalculator:
             print(str(e))
 
     def load_vats(self, vat_rates_file):
+        # This method loads vat_rates data from vat_rates_file
         if not os.path.exists(vat_rates_file):
             print('I cannot find product catalogue file in {}'.format(vat_rates_file))
             return
@@ -62,12 +64,15 @@ class ReceiptCalculator:
             print(str(e))
 
     def get_product_catalogue(self):
+        #This method returns product_catalogue loaded in memory
         return self.product_catalogue
 
     def get_vat_rates(self):
+        #This method returns the vat_rates database loaded in memory
         return self.vat_rates
 
     def get_price(self, product):
+        # This method returns price for a product. In case product is not listed in the product_catalogue, returns None
         try:
             return self.product_catalogue[product.lower()]
         except Exception as e:
@@ -76,6 +81,8 @@ class ReceiptCalculator:
             return
 
     def get_vat(self, product):
+        # This method returns vat for the product (in %).
+        # In case product is not listed in the vat_rates database, the method assumes vat equal to 22
         search_term = product.lower().split('of')[-1].strip()
         try:
             return self.vat_rates[search_term]
@@ -85,6 +92,8 @@ class ReceiptCalculator:
             return 22
 
     def get_full_price(self, product):
+        # The method returns the full price of a product (price + price * VAT%)
+        # I do not use this method for the task. However, I find it
         price = self.get_price(product)
         vat = self.get_vat(product)
         if price is None or vat is None:
@@ -92,6 +101,8 @@ class ReceiptCalculator:
         return price + price * vat / 100
 
     def set_price(self, product, price):
+        # This method sets the price of the product (or adds a new product in the product catalogue)
+        # I do not use this method for the task. However, it will be necessary to have it in case of any extensions
         if not isinstance(price, float) and not isinstance(price, int):
             print('I do not update the catalogue with "Product: {}, Price: {}", since price should be of type float'
                   'or int.'.format(product, price))
@@ -99,6 +110,8 @@ class ReceiptCalculator:
         self.product_catalogue[product.lower()] = price
 
     def set_vat(self, product, vat):
+        # This method updates product's vat (or updates VAT for already existing product)
+        # I do not use this method for the task. However, it will be necessary to have it in case of any extensions
         if not isinstance(vat, float) and not isinstance(vat, int):
             print('I do not update the vat rates database with "Product: {}, VAT: {}", since VAT should be of type int'
                   'or float.'.format(product, vat))
